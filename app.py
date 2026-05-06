@@ -117,6 +117,10 @@ def index():
     """返回首页"""
     return render_template('index.html')
 
+@app.route('/test')
+def test():
+    return "Hello! The server is working. 🎉"
+
 
 @app.route('/api/fortune', methods=['POST'])
 def get_fortune():
