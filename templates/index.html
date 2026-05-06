@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>星座运势查询 - 感情线 & 事业线</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 30%, #2a1a4a 60%, #0a0a1a 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 20px 16px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700, #ff69b4, #87ceeb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 4px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            padding: 0 20px;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 105, 180, 0.2));
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+        }
+
+        .tab-icon {
+            font-size: 1.2rem;
+            margin-right: 6px;
+        }
+
+        /* Form */
+        .form-section {
+            padding: 0 20px;
+            flex: 1;
+        }
+
+        .form-panel {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .form-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+        }
+
+        .form-label .required {
+            color: #ff6b9d;
+        }
+
+        .select-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .select-item {
+            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .select-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .select-item.selected {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 105, 180, 0.2));
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .situation-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .situation-item {
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .situation-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .situation-item.selected {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 105, 180, 0.2));
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 24px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 215, 0, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 26, 0.95);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 215, 0, 0.1);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Result */
+        .result-section {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .result-section.active {
+            display: block;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-type {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 8px;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .result-content {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.85);
+            white-space: pre-wrap;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .result-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .copy-btn {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 215, 0, 0.25);
+        }
+
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(255, 215, 0, 0.9);
+            color: #1a1a1a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 200;
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Hidden inputs for selected values */
+        .hidden-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">🔮</div>
+            <h1 class="title">星座运势查询</h1>
+            <p class="subtitle">感情线 & 事业线 每周预测</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="love" onclick="switchTab('love')">
+                <span class="tab-icon">💕</span>感情线
+            </div>
+            <div class="tab" data-tab="career" onclick="switchTab('career')">
+                <span class="tab-icon">💼</span>事业线
+            </div>
+        </div>
+
+        <!-- 感情线表单 -->
+        <div class="form-section">
+            <div class="form-panel active" id="lovePanel">
+                <div class="form-group">
+                    <label class="form-label">我的星座 <span class="required">*</span></label>
+                    <div class="select-group" data-field="my_sign">
+                        <div class="select-item" data-value="白羊座">白羊座</div>
+                        <div class="select-item" data-value="金牛座">金牛座</div>
+                        <div class="select-item" data-value="双子座">双子座</div>
+                        <div class="select-item" data-value="巨蟹座">巨蟹座</div>
+                        <div class="select-item" data-value="狮子座">狮子座</div>
+                        <div class="select-item" data-value="处女座">处女座</div>
+                        <div class="select-item" data-value="天秤座">天秤座</div>
+                        <div class="select-item" data-value="天蝎座">天蝎座</div>
+                        <div class="select-item" data-value="射手座">射手座</div>
+                        <div class="select-item" data-value="摩羯座">摩羯座</div>
+                        <div class="select-item" data-value="水瓶座">水瓶座</div>
+                        <div class="select-item" data-value="双鱼座">双鱼座</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">对方星座 <span class="required">*</span></label>
+                    <div class="select-group" data-field="crush_sign">
+                        <div class="select-item" data-value="白羊座">白羊座</div>
+                        <div class="select-item" data-value="金牛座">金牛座</div>
+                        <div class="select-item" data-value="双子座">双子座</div>
+                        <div class="select-item" data-value="巨蟹座">巨蟹座</div>
+                        <div class="select-item" data-value="狮子座">狮子座</div>
+                        <div class="select-item" data-value="处女座">处女座</div>
+                        <div class="select-item" data-value="天秤座">天秤座</div>
+                        <div class="select-item" data-value="天蝎座">天蝎座</div>
+                        <div class="select-item" data-value="射手座">射手座</div>
+                        <div class="select-item" data-value="摩羯座">摩羯座</div>
+                        <div class="select-item" data-value="水瓶座">水瓶座</div>
+                        <div class="select-item" data-value="双鱼座">双鱼座</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">当前阶段 <span class="required">*</span></label>
+                    <div class="situation-options" data-field="situation">
+                        <div class="situation-item" data-value="暗恋">💭 暗恋</div>
+                        <div class="situation-item" data-value="暧昧">✨ 暧昧</div>
+                        <div class="situation-item" data-value="恋爱中">💑 恋爱中</div>
+                        <div class="situation-item" data-value="分手">💔 分手</div>
+                    </div>
+                </div>
+
+                <button class="submit-btn" onclick="submitLove()">查看本周运势</button>
+            </div>
+
+            <!-- 事业线表单 -->
+            <div class="form-panel" id="careerPanel">
+                <div class="form-group">
+                    <label class="form-label">我的星座 <span class="required">*</span></label>
+                    <div class="select-group" data-field="my_sign_career">
+                        <div class="select-item" data-value="白羊座">白羊座</div>
+                        <div class="select-item" data-value="金牛座">金牛座</div>
+                        <div class="select-item" data-value="双子座">双子座</div>
+                        <div class="select-item" data-value="巨蟹座">巨蟹座</div>
+                        <div class="select-item" data-value="狮子座">狮子座</div>
+                        <div class="select-item" data-value="处女座">处女座</div>
+                        <div class="select-item" data-value="天秤座">天秤座</div>
+                        <div class="select-item" data-value="天蝎座">天蝎座</div>
+                        <div class="select-item" data-value="射手座">射手座</div>
+                        <div class="select-item" data-value="摩羯座">摩羯座</div>
+                        <div class="select-item" data-value="水瓶座">水瓶座</div>
+                        <div class="select-item" data-value="双鱼座">双鱼座</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">对方星座/领导星座 <span class="required">*</span></label>
+                    <div class="select-group" data-field="target_sign">
+                        <div class="select-item" data-value="白羊座">白羊座</div>
+                        <div class="select-item" data-value="金牛座">金牛座</div>
+                        <div class="select-item" data-value="双子座">双子座</div>
+                        <div class="select-item" data-value="巨蟹座">巨蟹座</div>
+                        <div class="select-item" data-value="狮子座">狮子座</div>
+                        <div class="select-item" data-value="处女座">处女座</div>
+                        <div class="select-item" data-value="天秤座">天秤座</div>
+                        <div class="select-item" data-value="天蝎座">天蝎座</div>
+                        <div class="select-item" data-value="射手座">射手座</div>
+                        <div class="select-item" data-value="摩羯座">摩羯座</div>
+                        <div class="select-item" data-value="水瓶座">水瓶座</div>
+                        <div class="select-item" data-value="双鱼座">双鱼座</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">分析场景 <span class="required">*</span></label>
+                    <div class="situation-options" data-field="scene">
+                        <div class="situation-item" data-value="汇报">📊 汇报</div>
+                        <div class="situation-item" data-value="合作">🤝 合作</div>
+                        <div class="situation-item" data-value="冲突">⚡ 冲突</div>
+                        <div class="situation-item" data-value="日常沟通">💬 日常</div>
+                    </div>
+                </div>
+
+                <button class="submit-btn" onclick="submitCareer()">查看本周运势</button>
+            </div>
+        </div>
+
+        <!-- 结果区域 -->
+        <div class="result-section" id="resultSection">
+            <div class="result-card">
+                <div class="result-header">
+                    <p class="result-type" id="resultType"></p>
+                    <h2 class="result-title" id="resultTitle"></h2>
+                </div>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+            <div class="result-actions">
+                <div class="result-btn copy-btn" onclick="copyResult()">📋 复制结果</div>
+                <div class="result-btn retry-btn" onclick="resetForm()">重新查询</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在生成你的专属运势...</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+    <script>
+        // 当前Tab
+        let currentTab = 'love';
+
+        // 表单数据
+        let loveData = {
+            my_sign: '',
+            crush_sign: '',
+            situation: ''
+        };
+
+        let careerData = {
+            my_sign: '',
+            target_sign: '',
+            scene: ''
+        };
+
+        // 初始化星星背景
+        function initStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 切换Tab
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+            document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+            if (tab === 'love') {
+                document.getElementById('lovePanel').classList.add('active');
+            } else {
+                document.getElementById('careerPanel').classList.add('active');
+            }
+
+            // 隐藏结果
+            document.getElementById('resultSection').classList.remove('active');
+        }
+
+        // 初始化选择器
+        function initSelectors() {
+            // 为所有 select-item 添加点击事件
+            document.querySelectorAll('.select-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const field = group.dataset.field;
+                    const value = this.dataset.value;
+
+                    // 取消同组其他选中
+                    group.querySelectorAll('.select-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    // 更新数据
+                    if (field === 'my_sign') {
+                        loveData.my_sign = value;
+                    } else if (field === 'crush_sign') {
+                        loveData.crush_sign = value;
+                    } else if (field === 'my_sign_career') {
+                        careerData.my_sign = value;
+                    } else if (field === 'target_sign') {
+                        careerData.target_sign = value;
+                    }
+                });
+            });
+
+            // 为所有 situation-item 添加点击事件
+            document.querySelectorAll('.situation-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    const field = group.dataset.field;
+                    const value = this.dataset.value;
+
+                    // 取消同组其他选中
+                    group.querySelectorAll('.situation-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    // 更新数据
+                    if (field === 'situation') {
+                        loveData.situation = value;
+                    } else if (field === 'scene') {
+                        careerData.scene = value;
+                    }
+                });
+            });
+        }
+
+        // 显示loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        // 隐藏loading
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // 显示toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // 提交感情线查询
+        async function submitLove() {
+            if (!loveData.my_sign || !loveData.crush_sign || !loveData.situation) {
+                showToast('请填写所有必填项');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/fortune', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'love',
+                        my_sign: loveData.my_sign,
+                        crush_sign: loveData.crush_sign,
+                        situation: loveData.situation
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult('love', loveData.crush_sign, data.result);
+                } else {
+                    showToast(data.error || '查询失败');
+                }
+            } catch (error) {
+                showToast('网络错误，请重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 提交事业线查询
+        async function submitCareer() {
+            if (!careerData.my_sign || !careerData.target_sign || !careerData.scene) {
+                showToast('请填写所有必填项');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/fortune', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'career',
+                        my_sign: careerData.my_sign,
+                        target_sign: careerData.target_sign,
+                        scene: careerData.scene
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult('career', careerData.target_sign, data.result);
+                } else {
+                    showToast(data.error || '查询失败');
+                }
+            } catch (error) {
+                showToast('网络错误，请重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 显示结果
+        function showResult(type, targetSign, content) {
+            const resultSection = document.getElementById('resultSection');
+            const resultType = document.getElementById('resultType');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultContent = document.getElementById('resultContent');
+
+            if (type === 'love') {
+                resultType.textContent = '💕 感情线运势';
+                resultTitle.textContent = `本周与 ${targetSign} 的感情运势`;
+            } else {
+                resultType.textContent = '💼 事业线运势';
+                resultTitle.textContent = `本周与 ${targetSign} 的事业运势`;
+            }
+
+            resultContent.textContent = content;
+            resultSection.classList.add('active');
+
+            // 滚动到结果区域
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 复制结果
+        function copyResult() {
+            const content = document.getElementById('resultContent').textContent;
+            const title = document.getElementById('resultTitle').textContent;
+            const fullText = title + '\n\n' + content;
+
+            navigator.clipboard.writeText(fullText).then(() => {
+                showToast('已复制到剪贴板');
+            }).catch(() => {
+                showToast('复制失败');
+            });
+        }
+
+        // 重置表单
+        function resetForm() {
+            // 重置数据
+            loveData = { my_sign: '', crush_sign: '', situation: '' };
+            careerData = { my_sign: '', target_sign: '', scene: '' };
+
+            // 重置选中状态
+            document.querySelectorAll('.select-item, .situation-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // 隐藏结果
+            document.getElementById('resultSection').classList.remove('active');
+
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 初始化
+        initStars();
+        initSelectors();
+    </script>
+</body>
+</html>
