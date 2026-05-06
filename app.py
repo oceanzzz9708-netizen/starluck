@@ -172,5 +172,6 @@ def get_fortune():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get('PORT', 5000))
+    # Railway 常用 8080，如果 PORT 没有就默认 8080
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port, debug=False)
